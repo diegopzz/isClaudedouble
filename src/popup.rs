@@ -9,6 +9,7 @@ use time::OffsetDateTime;
 
 use crate::{
     config::{AppConfig, ThemePreset},
+    startup,
     status::{PromotionState, active_window_ends_at, next_two_x_starts_at, status_at},
 };
 
@@ -186,17 +187,20 @@ struct PopupApp {
     local_config: AppConfig,
     theme: Theme,
     dirty: bool,
+    startup_enabled: bool,
 }
 
 impl PopupApp {
     fn new(config: Arc<Mutex<AppConfig>>) -> Self {
         let local_config = config.lock().unwrap().clone();
         let theme = Theme::from_config(&local_config.theme);
+        let startup_enabled = startup::is_enabled();
         Self {
             config,
             local_config,
             theme,
             dirty: false,
+            startup_enabled,
         }
     }
 
@@ -552,6 +556,58 @@ impl eframe::App for PopupApp {
                             if theme_changed {
                                 self.rebuild_theme(ctx);
                             }
+                        });
+
+                    // ── Separator ──
+                    let sep_rect3 = egui::Rect::from_min_size(
+                        ui.cursor().min + egui::vec2(18.0, 0.0),
+                        egui::vec2(ui.available_width() - 36.0, 1.0),
+                    );
+                    ui.painter().rect_filled(
+                        sep_rect3,
+                        egui::CornerRadius::ZERO,
+                        t.text.gamma_multiply(0.04),
+                    );
+                    ui.add_space(1.0);
+
+                    // ── Startup section ──
+                    egui::Frame::new()
+                        .fill(t.bg)
+                        .inner_margin(egui::Margin::symmetric(18, 12))
+                        .show(ui, |ui| {
+                            section_title(ui, "SYSTEM", &t);
+                            ui.add_space(8.0);
+
+                            ui.horizontal(|ui| {
+                                ui.label(
+                                    egui::RichText::new("Launch at startup")
+                                        .size(12.0)
+                                        .color(t.secondary),
+                                );
+                                ui.with_layout(
+                                    egui::Layout::right_to_left(egui::Align::Center),
+                                    |ui| {
+                                        if toggle_switch(
+                                            ui,
+                                            &mut self.startup_enabled,
+                                            &t,
+                                        ) {
+                                            if let Err(e) =
+                                                startup::set_enabled(self.startup_enabled)
+                                            {
+                                                eprintln!(
+                                                    "failed to set startup: {e:#}"
+                                                );
+                                                self.startup_enabled =
+                                                    !self.startup_enabled;
+                                            }
+                                            self.local_config.launch_at_startup =
+                                                self.startup_enabled;
+                                            self.dirty = true;
+                                        }
+                                    },
+                                );
+                            });
                         });
 
                     ui.add_space(8.0);

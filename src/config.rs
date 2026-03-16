@@ -11,6 +11,8 @@ pub struct AppConfig {
     pub notifications: NotificationConfig,
     #[serde(default)]
     pub theme: ThemeConfig,
+    #[serde(default)]
+    pub launch_at_startup: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -58,6 +60,7 @@ impl Default for AppConfig {
                 before_start_minutes: vec![5, 15],
             },
             theme: ThemeConfig::default(),
+            launch_at_startup: false,
         }
     }
 }

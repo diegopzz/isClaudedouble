@@ -3,4 +3,5 @@ pub mod icon;
 pub mod notify;
 pub mod popup;
 pub mod runtime;
+pub mod startup;
 pub mod status;
