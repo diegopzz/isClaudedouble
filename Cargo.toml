@@ -1,0 +1,20 @@
+[package]
+name = "isclaude2x-tray"
+version = "0.1.0"
+edition = "2024"
+description = "System tray app that tracks Claude 2x usage rate promotion periods"
+license = "MIT"
+repository = "https://github.com/diegopzz/isClaudedouble"
+
+[dependencies]
+anyhow = "1.0.100"
+dirs = "6"
+eframe = "0.31"
+serde = { version = "1", features = ["derive"] }
+time = { version = "0.3.44", features = ["local-offset", "macros"] }
+toml = "0.8"
+tray-icon = "0.21.3"
+winit = "0.30.12"
+
+[target.'cfg(windows)'.dependencies]
+winrt-notification = "0.5"

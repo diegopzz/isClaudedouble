@@ -1,0 +1,8 @@
+/target
+*.exe
+*.pdb
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
