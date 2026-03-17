@@ -229,7 +229,10 @@ impl eframe::App for PopupApp {
                     .stroke(egui::Stroke::new(1.0, t.separator)),
             )
             .show(ctx, |ui| {
-                egui::ScrollArea::vertical().show(ui, |ui| {
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .max_height(ui.available_height())
+                    .show(ui, |ui| {
                     // ── Top area with subtle gradient feel ──
                     egui::Frame::new()
                         .fill(t.bg)
@@ -267,16 +270,31 @@ impl eframe::App for PopupApp {
                                 ui.with_layout(
                                     egui::Layout::right_to_left(egui::Align::Center),
                                     |ui| {
-                                        let btn = ui.add_sized(
-                                            [28.0, 28.0],
-                                            egui::Button::new(
-                                                egui::RichText::new("\u{2715}")
-                                                    .size(13.0)
-                                                    .color(t.secondary),
-                                            )
-                                            .corner_radius(egui::CornerRadius::same(6))
-                                            .fill(egui::Color32::TRANSPARENT)
-                                            .stroke(egui::Stroke::NONE),
+                                        let btn_size = 28.0;
+                                        let (btn_rect, btn) = ui.allocate_exact_size(
+                                            egui::vec2(btn_size, btn_size),
+                                            egui::Sense::click(),
+                                        );
+                                        // Draw X with lines
+                                        let inset = 9.0;
+                                        let stroke_color = if btn.hovered() {
+                                            t.text
+                                        } else {
+                                            t.secondary
+                                        };
+                                        ui.painter().line_segment(
+                                            [
+                                                egui::pos2(btn_rect.left() + inset, btn_rect.top() + inset),
+                                                egui::pos2(btn_rect.right() - inset, btn_rect.bottom() - inset),
+                                            ],
+                                            egui::Stroke::new(1.5, stroke_color),
+                                        );
+                                        ui.painter().line_segment(
+                                            [
+                                                egui::pos2(btn_rect.right() - inset, btn_rect.top() + inset),
+                                                egui::pos2(btn_rect.left() + inset, btn_rect.bottom() - inset),
+                                            ],
+                                            egui::Stroke::new(1.5, stroke_color),
                                         );
                                         if btn.clicked() {
                                             ctx.send_viewport_cmd(
